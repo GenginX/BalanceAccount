@@ -2,10 +2,8 @@ package com.kaczmar.CurrencyAccount.controller;
 
 import com.kaczmar.CurrencyAccount.dto.CreateUserSubAccountDto;
 import com.kaczmar.CurrencyAccount.exceptions.AccountWithRemainingCurrencyNotExists;
-import com.kaczmar.CurrencyAccount.model.UserAccount;
 import com.kaczmar.CurrencyAccount.model.UserSubAccount;
 import com.kaczmar.CurrencyAccount.model.UserSubAccountOutput;
-import com.kaczmar.CurrencyAccount.repository.UserSubAccountRepository;
 import com.kaczmar.CurrencyAccount.service.UserSubAccountService;
 import org.json.JSONException;
 import org.springframework.http.HttpStatus;
@@ -27,15 +25,15 @@ public class UserSubAccountController {
     }
 
     @PostMapping()
-    public ResponseEntity<UserSubAccountOutput> createUser(@RequestBody CreateUserSubAccountDto userSubAccountDto){
+    public ResponseEntity<UserSubAccountOutput> createUser(@RequestBody CreateUserSubAccountDto userSubAccountDto) {
         UserSubAccount userSubAccount = userSubAccountService.createUserSubAccount(userSubAccountDto);
         return new ResponseEntity<>((userSubAccount.convertFromUserSubAccountToOutput()), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<UserSubAccountOutput>> getAllSubAccountsByPesel(@RequestParam String pesel){
+    public ResponseEntity<List<UserSubAccountOutput>> getAllSubAccountsByPesel(@RequestParam String pesel) {
         List<UserSubAccountOutput> allSubAccountsByPesel = userSubAccountService.getAllSubAccountsByPesel(pesel).stream()
-                .map(e->e.convertFromUserSubAccountToOutput())
+                .map(e -> e.convertFromUserSubAccountToOutput())
                 .collect(Collectors.toList());
         return new ResponseEntity<>(allSubAccountsByPesel, HttpStatus.FOUND);
     }
@@ -43,9 +41,9 @@ public class UserSubAccountController {
     @GetMapping("/PLN/USD")
     public ResponseEntity<List<UserSubAccountOutput>> convertFromPlnToUsd(@RequestParam String pesel) throws IOException, AccountWithRemainingCurrencyNotExists, JSONException {
         List<UserSubAccountOutput> userSubAccounts = userSubAccountService.convertPlnToUsd(pesel).stream()
-                .map(e->e.convertFromUserSubAccountToOutput())
+                .map(e -> e.convertFromUserSubAccountToOutput())
                 .collect(Collectors.toList());
-        return new ResponseEntity<>(userSubAccounts,HttpStatus.OK);
+        return new ResponseEntity<>(userSubAccounts, HttpStatus.OK);
     }
 
 }

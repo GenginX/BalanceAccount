@@ -16,5 +16,4 @@ public class UserSubAccountOutput {
     private BigDecimal currentAccountBalance;
 
 
-
 }

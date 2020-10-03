@@ -9,7 +9,6 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Data
@@ -33,11 +32,11 @@ public class UserAccount {
     @OneToMany(mappedBy = "userMainAccount", cascade = CascadeType.ALL)
     private List<UserSubAccount> userSubAccounts = new ArrayList<>();
 
-    public UserAccountOutput convertFromUserAccountToOutput(){
+    public UserAccountOutput convertFromUserAccountToOutput() {
         return UserAccountOutput.builder()
                 .name(this.name)
                 .surname(this.surname)
-                .pesel(this .pesel)
+                .pesel(this.pesel)
                 .baseAccountAmount(this.baseAccountAmount)
 //                .userSubAccountOutput(this.userSubAccounts.stream()
 //                        .map(UserSubAccount::convertFromUserSubAccountToOutput)

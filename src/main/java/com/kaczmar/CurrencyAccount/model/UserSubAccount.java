@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.Currency;
 
 @Entity
 @Builder
@@ -31,7 +30,7 @@ public class UserSubAccount {
     private UserAccount userMainAccount;
 
 
-    public UserSubAccountOutput convertFromUserSubAccountToOutput(){
+    public UserSubAccountOutput convertFromUserSubAccountToOutput() {
         return UserSubAccountOutput.builder()
                 .pesel(this.pesel)
                 .currencyCode(this.currencyCode)

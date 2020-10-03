@@ -21,12 +21,11 @@ public class UserAccountService {
         this.userAccountRepository = userRepository;
     }
 
-//    @Transactional
     public UserAccount createUserAcc(CreateUserAccountDto userDto) throws Exception {
-        if(isPeselExistingInDB(userDto.getPesel())){
+        if (isPeselExistingInDB(userDto.getPesel())) {
             throw new PeselAlreadyExistsException(PESEL_CANNOT_BE_DUPLICATED);
         }
-        if(!isUserLegalAge(userDto.getPesel())){
+        if (!isUserLegalAge(userDto.getPesel())) {
             throw new UserAgeIsNotLegalException(AGE_LOWER_THAN_18);
         }
 
@@ -35,20 +34,20 @@ public class UserAccountService {
         return userAccount;
     }
 
-    public UserAccount getUserById(Long id){
+    public UserAccount getUserById(Long id) {
         UserAccount one = userAccountRepository.findById(id).get();
         return one;
     }
 
-    public List<UserAccount> getAllUsers(){
+    public List<UserAccount> getAllUsers() {
         return userAccountRepository.findAll();
     }
 
-    public UserAccount getUserByPesel(String pesel){
+    public UserAccount getUserByPesel(String pesel) {
         return userAccountRepository.findByPesel(pesel);
     }
 
-    private UserAccount createUserAccFromDto(CreateUserAccountDto userAccDto){
+    private UserAccount createUserAccFromDto(CreateUserAccountDto userAccDto) {
         return UserAccount.builder()
                 .name(userAccDto.getName())
                 .surname(userAccDto.getSurname())
@@ -57,25 +56,25 @@ public class UserAccountService {
                 .build();
     }
 
-    private boolean isPeselExistingInDB(String pesel){
+    private boolean isPeselExistingInDB(String pesel) {
         return userAccountRepository.existsAllByPesel(pesel);
     }
 
-    private boolean isUserLegalAge(String pesel){
+    private boolean isUserLegalAge(String pesel) {
         Integer userYearBirth = null;
-        String userYearEndBirth = pesel.substring(0,2);
+        String userYearEndBirth = pesel.substring(0, 2);
         int userMonthBirth = Integer.parseInt(pesel.substring(2, 4));
-        if(userMonthBirth - 20 > 0 && userMonthBirth - 20 <= 12){
+        if (userMonthBirth - 20 > 0 && userMonthBirth - 20 <= 12) {
             String fullUserYearBirth = "20" + userYearEndBirth;
             userYearBirth = Integer.valueOf(fullUserYearBirth);
-        }else{
+        } else {
             String fullUserYearBirth = "19" + userYearEndBirth;
             userYearBirth = Integer.valueOf(fullUserYearBirth);
         }
         Integer currentYear = LocalDateTime.now().getYear();
-        if(currentYear - userYearBirth >=18){
+        if (currentYear - userYearBirth >= 18) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }

@@ -19,7 +19,7 @@ public class UserAccountController {
     private UserAccountService userAccountService;
 
     public UserAccountController(UserAccountService userAccountService) {
-        this.userAccountService = userAccountService ;
+        this.userAccountService = userAccountService;
     }
 
     @PostMapping
@@ -29,27 +29,26 @@ public class UserAccountController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserAccountOutput> getUserById(@PathVariable("id") Long id){
+    public ResponseEntity<UserAccountOutput> getUserById(@PathVariable("id") Long id) {
         UserAccount userAccountById = userAccountService.getUserById(id);
         return new ResponseEntity<>(userAccountById.convertFromUserAccountToOutput(), HttpStatus.FOUND);
     }
 
     @GetMapping
-    public ResponseEntity<List<UserAccountOutput>> getAllUsers(){
+    public ResponseEntity<List<UserAccountOutput>> getAllUsers() {
         return ResponseEntity
                 .status(HttpStatus.FOUND)
                 .body(userAccountService.getAllUsers().stream()
-                        .map(e-> e.convertFromUserAccountToOutput())
+                        .map(e -> e.convertFromUserAccountToOutput())
                         .collect(Collectors.toList()));
     }
 
     @GetMapping("/pesel")
-    public ResponseEntity<UserAccountOutput> getAccountByPesel(@RequestParam String pesel){
+    public ResponseEntity<UserAccountOutput> getAccountByPesel(@RequestParam String pesel) {
         return ResponseEntity
                 .status(HttpStatus.FOUND)
                 .body(userAccountService.getUserByPesel(pesel).convertFromUserAccountToOutput());
     }
-
 
 
 }

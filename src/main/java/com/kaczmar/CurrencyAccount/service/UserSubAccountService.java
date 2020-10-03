@@ -1,6 +1,5 @@
 package com.kaczmar.CurrencyAccount.service;
 
-import com.google.gson.Gson;
 import com.kaczmar.CurrencyAccount.dto.CreateUserSubAccountDto;
 import com.kaczmar.CurrencyAccount.exceptions.AccountWithRemainingCurrencyNotExists;
 import com.kaczmar.CurrencyAccount.model.*;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -49,15 +47,11 @@ public class UserSubAccountService {
 
     public List<UserSubAccount> getAllSubAccountsByPesel(String pesel) {
         List<UserSubAccount> allByPesel = userSubAccountRepository.findAllByPesel(pesel);
-//        UserAccount user = userAccountService.getUserByPesel(pesel);
-//        List<UserSubAccount> allByPesel = userSubAccountRepository.findAllByUserMainAccount(user.getId());
         return allByPesel;
     }
 
 
     public List<UserSubAccount> convertPlnToUsd(String pesel) throws IOException, AccountWithRemainingCurrencyNotExists, JSONException {
-//        ApiResponse apiResponse = getApiResponse();
-//        RatesTable rates = apiResponse.getRates();
         final String actualValue = getApiResponse();
         BigDecimal actualValueConverted = new BigDecimal(actualValue);
 
@@ -87,7 +81,7 @@ public class UserSubAccountService {
         System.out.println(plnBalance.toString());
         System.out.println(actualValueConverted);
 
-        BigDecimal newUsdBalance = usdBalance.add(plnBalance.divide(actualValueConverted,2, RoundingMode.HALF_UP).setScale(2, RoundingMode.CEILING));
+        BigDecimal newUsdBalance = usdBalance.add(plnBalance.divide(actualValueConverted, 2, RoundingMode.HALF_UP).setScale(2, RoundingMode.CEILING));
         BigDecimal newPLNBalance = plnBalance.subtract(plnBalance);
 
         userUsdAccount.setCurrentAccountBalance(newUsdBalance);
