@@ -1,12 +1,15 @@
 package com.kaczmar.CurrencyAccount.controller;
 
 import com.kaczmar.CurrencyAccount.dto.CreateUserAccountDto;
+import com.kaczmar.CurrencyAccount.model.RateResponse;
 import com.kaczmar.CurrencyAccount.model.UserAccount;
 import com.kaczmar.CurrencyAccount.model.UserAccountOutput;
+import com.kaczmar.CurrencyAccount.service.RestTemplateService;
 import com.kaczmar.CurrencyAccount.service.UserAccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,9 +20,11 @@ public class UserAccountController {
 
 
     private UserAccountService userAccountService;
+    private RestTemplateService restTemplateService;
 
-    public UserAccountController(UserAccountService userAccountService) {
+    public UserAccountController(UserAccountService userAccountService, RestTemplateService restTemplateService) {
         this.userAccountService = userAccountService;
+        this.restTemplateService = restTemplateService;
     }
 
     @PostMapping
@@ -49,6 +54,8 @@ public class UserAccountController {
                 .status(HttpStatus.FOUND)
                 .body(userAccountService.getUserByPesel(pesel).convertFromUserAccountToOutput());
     }
+
+
 
 
 }

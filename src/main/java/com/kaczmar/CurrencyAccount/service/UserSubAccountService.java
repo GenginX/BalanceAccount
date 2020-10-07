@@ -1,7 +1,9 @@
 package com.kaczmar.CurrencyAccount.service;
 
 import com.kaczmar.CurrencyAccount.dto.CreateUserSubAccountDto;
+import com.kaczmar.CurrencyAccount.dto.CurrencyExchangeDto;
 import com.kaczmar.CurrencyAccount.exceptions.AccountWithRemainingCurrencyNotExists;
+import com.kaczmar.CurrencyAccount.exceptions.NotEnoughMoneyOnAccount;
 import com.kaczmar.CurrencyAccount.model.*;
 import com.kaczmar.CurrencyAccount.repository.UserSubAccountRepository;
 import org.json.JSONArray;
@@ -16,20 +18,25 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserSubAccountService {
 
-    public static final String NO_USD = "THIS USER DON'T HAVE USD ACCOUNT";
-    public static final String NO_PLN = "THIS USER DON'T HAVE PLN ACCOUNT";
+    public static final String NO_CURRENCY = "THIS USER DON'T HAVE";
+    public static final String NOT_ENOUGH_MONEY = "USER DON'T HAVE ENOUGH MONEY ON ACCOUNT TO DO THIS OPERATION";
     private final String urlUSD = "http://api.nbp.pl/api/exchangerates/rates/a/usd/?format=json";
 
     private UserSubAccountRepository userSubAccountRepository;
     private UserAccountService userAccountService;
+    private RestTemplateService restTemplateService;
 
-    public UserSubAccountService(UserSubAccountRepository userSubAccountRepository, UserAccountService userAccountService) {
+    public UserSubAccountService(UserSubAccountRepository userSubAccountRepository,
+                                 UserAccountService userAccountService,
+                                 RestTemplateService restTemplateService) {
         this.userSubAccountRepository = userSubAccountRepository;
         this.userAccountService = userAccountService;
+        this.restTemplateService = restTemplateService;
     }
 
     public UserSubAccount createUserSubAccount(CreateUserSubAccountDto userSubAccountDto) {
@@ -61,7 +68,6 @@ public class UserSubAccountService {
                 .findAny();
 
         if (usdAccount.isEmpty()) {
-            throw new AccountWithRemainingCurrencyNotExists(NO_USD);
         }
 
         UserSubAccount userUsdAccount = usdAccount.get();
@@ -70,7 +76,6 @@ public class UserSubAccountService {
                 .findAny();
 
         if (plnAccount.isEmpty()) {
-            throw new AccountWithRemainingCurrencyNotExists(NO_PLN);
 
         }
         UserSubAccount userPlnAccount = plnAccount.get();
@@ -120,5 +125,69 @@ public class UserSubAccountService {
         }
         return sb.toString();
     }
+
+    public String currencyCalculator(CurrencyExchangeDto dto) {
+        BigDecimal providedMoney = dto.getAmount();
+        BigDecimal result = getCorrectCalculation(providedMoney, dto.getCurrencyFrom(), dto.getCurrencyTo());
+
+        return providedMoney + dto.getCurrencyFrom() + " to: " + result.toString() + dto.getCurrencyTo();
+
+    }
+
+    private BigDecimal getCorrectCalculation(BigDecimal money, String currencyFrom, String currencyTo) {
+        BigDecimal actualCurrencyUSD;
+        BigDecimal result;
+
+        if (currencyFrom.toUpperCase().equals("PLN")) {
+            actualCurrencyUSD = restTemplateService.getActualCurrency(currencyTo);
+            result = money.divide(actualCurrencyUSD, 2, RoundingMode.UP);
+        } else {
+            actualCurrencyUSD = restTemplateService.getActualCurrency(currencyFrom);
+            result = money.multiply(actualCurrencyUSD).setScale(2, RoundingMode.UP);
+        }
+
+        return result;
+    }
+
+    public List<UserSubAccountOutput> ExchangeCurrencyOnSubAccount(CurrencyExchangeDto dto, String pesel) throws AccountWithRemainingCurrencyNotExists, NotEnoughMoneyOnAccount {
+
+        List<UserSubAccount> allSubAccountsByPesel = getAllSubAccountsByPesel(pesel);
+
+        UserSubAccount currencyFromAccount = getCurrencyAccount(dto.getCurrencyFrom(), allSubAccountsByPesel);
+        UserSubAccount currencyToAccount = getCurrencyAccount(dto.getCurrencyTo(), allSubAccountsByPesel);
+        if(!isEnoughMoneyOnAccount(currencyFromAccount, dto.getAmount())){
+            throw new NotEnoughMoneyOnAccount(NOT_ENOUGH_MONEY);
+        }
+        BigDecimal convertedAmount = getCorrectCalculation(dto.getAmount(), dto.getCurrencyFrom(), dto.getCurrencyTo());
+        BigDecimal newAmountForCurrencyFromAccount = currencyFromAccount.getCurrentAccountBalance().subtract(dto.getAmount());
+        BigDecimal newAmountForCurrencyToAccount = currencyToAccount.getCurrentAccountBalance().add(convertedAmount);
+        updateMoneyOnAccount(currencyFromAccount,newAmountForCurrencyFromAccount);
+        updateMoneyOnAccount(currencyToAccount, newAmountForCurrencyToAccount);
+
+        return getAllSubAccountsByPesel(pesel).stream()
+                .map(e-> e.convertFromUserSubAccountToOutput())
+                .collect(Collectors.toList());
+    }
+
+    private UserSubAccount getCurrencyAccount(String code, List<UserSubAccount> subAccountList) throws AccountWithRemainingCurrencyNotExists {
+        Optional<UserSubAccount> any = subAccountList.stream()
+                .filter(e -> e.getCurrencyCode().equalsIgnoreCase(code))
+                .findAny();
+        if(any.isEmpty()){
+            throw new AccountWithRemainingCurrencyNotExists(NO_CURRENCY + " " + code);
+        }
+        return any.get();
+    }
+
+    private boolean isEnoughMoneyOnAccount(UserSubAccount account, BigDecimal amount){
+        BigDecimal currentAccountBalance = account.getCurrentAccountBalance();
+        return currentAccountBalance.subtract(amount).compareTo(BigDecimal.ZERO) >= 0;
+    }
+
+    private UserSubAccount updateMoneyOnAccount(UserSubAccount account, BigDecimal money){
+        account.setCurrentAccountBalance(money);
+        return userSubAccountRepository.save(account);
+    }
+
 
 }

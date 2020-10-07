@@ -1,6 +1,7 @@
 package com.kaczmar.CurrencyAccount.controller;
 
 import com.kaczmar.CurrencyAccount.exceptions.AccountWithRemainingCurrencyNotExists;
+import com.kaczmar.CurrencyAccount.exceptions.NotEnoughMoneyOnAccount;
 import com.kaczmar.CurrencyAccount.exceptions.PeselAlreadyExistsException;
 import com.kaczmar.CurrencyAccount.exceptions.UserAgeIsNotLegalException;
 import org.springframework.http.HttpStatus;
@@ -32,4 +33,10 @@ public class CurrencyAccountAdvise {
                 .body(e.getMessage());
     }
 
+    @ExceptionHandler(NotEnoughMoneyOnAccount.class)
+    public ResponseEntity<String> handleNotEnoughMoneyException(NotEnoughMoneyOnAccount e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
 }
