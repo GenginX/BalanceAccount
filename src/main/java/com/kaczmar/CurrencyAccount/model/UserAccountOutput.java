@@ -18,5 +18,7 @@ public class UserAccountOutput {
 
     private BigDecimal baseAccountAmount;
 
+    private String currencyCode;
+
 
 }

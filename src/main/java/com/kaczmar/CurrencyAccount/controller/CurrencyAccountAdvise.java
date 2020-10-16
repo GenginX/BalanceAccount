@@ -1,9 +1,6 @@
 package com.kaczmar.CurrencyAccount.controller;
 
-import com.kaczmar.CurrencyAccount.exceptions.AccountWithRemainingCurrencyNotExists;
-import com.kaczmar.CurrencyAccount.exceptions.NotEnoughMoneyOnAccount;
-import com.kaczmar.CurrencyAccount.exceptions.PeselAlreadyExistsException;
-import com.kaczmar.CurrencyAccount.exceptions.UserAgeIsNotLegalException;
+import com.kaczmar.CurrencyAccount.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -39,4 +36,26 @@ public class CurrencyAccountAdvise {
                 .status(HttpStatus.NOT_FOUND)
                 .body(e.getMessage());
     }
+
+    @ExceptionHandler(NoUserFoundForGivenIdException.class)
+    public ResponseEntity<String> handleNoUserFoundForGivenIdException(NoUserFoundForGivenIdException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(NoUserFoundForGivenPeselException.class)
+    public ResponseEntity<String> handleNoUserFoundForGivenPeselException(NoUserFoundForGivenPeselException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(PeselIsNotValid.class)
+    public ResponseEntity<String> handlePeselIsNotValidException(PeselIsNotValid e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(e.getMessage());
+    }
+
 }

@@ -20,4 +20,5 @@ public class CreateUserAccountDto {
 
     @NotNull
     private BigDecimal baseAccountAmount;
+
 }

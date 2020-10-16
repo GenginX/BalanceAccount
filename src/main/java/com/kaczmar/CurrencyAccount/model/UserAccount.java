@@ -27,7 +27,9 @@ public class UserAccount {
 
     private String pesel;
 
-    private BigDecimal baseAccountAmount;
+    private BigDecimal currentAccountBalance;
+
+    private String currencyCode;
 
     @OneToMany(mappedBy = "userMainAccount", cascade = CascadeType.ALL)
     private List<UserSubAccount> userSubAccounts = new ArrayList<>();
@@ -37,10 +39,8 @@ public class UserAccount {
                 .name(this.name)
                 .surname(this.surname)
                 .pesel(this.pesel)
-                .baseAccountAmount(this.baseAccountAmount)
-//                .userSubAccountOutput(this.userSubAccounts.stream()
-//                        .map(UserSubAccount::convertFromUserSubAccountToOutput)
-//                        .collect(Collectors.toList()))
+                .baseAccountAmount(this.currentAccountBalance)
+                .currencyCode(this.currencyCode)
                 .build();
     }
 

@@ -1,6 +1,8 @@
 package com.kaczmar.CurrencyAccount.controller;
 
 import com.kaczmar.CurrencyAccount.dto.CreateUserAccountDto;
+import com.kaczmar.CurrencyAccount.exceptions.NoUserFoundForGivenIdException;
+import com.kaczmar.CurrencyAccount.exceptions.NoUserFoundForGivenPeselException;
 import com.kaczmar.CurrencyAccount.model.RateResponse;
 import com.kaczmar.CurrencyAccount.model.UserAccount;
 import com.kaczmar.CurrencyAccount.model.UserAccountOutput;
@@ -19,12 +21,10 @@ import java.util.stream.Collectors;
 public class UserAccountController {
 
 
-    private UserAccountService userAccountService;
-    private RestTemplateService restTemplateService;
+    private final UserAccountService userAccountService;
 
-    public UserAccountController(UserAccountService userAccountService, RestTemplateService restTemplateService) {
+    public UserAccountController(UserAccountService userAccountService) {
         this.userAccountService = userAccountService;
-        this.restTemplateService = restTemplateService;
     }
 
     @PostMapping
@@ -34,7 +34,7 @@ public class UserAccountController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserAccountOutput> getUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<UserAccountOutput> getUserById(@PathVariable("id") Long id) throws NoUserFoundForGivenIdException {
         UserAccount userAccountById = userAccountService.getUserById(id);
         return new ResponseEntity<>(userAccountById.convertFromUserAccountToOutput(), HttpStatus.FOUND);
     }
@@ -49,7 +49,7 @@ public class UserAccountController {
     }
 
     @GetMapping("/pesel")
-    public ResponseEntity<UserAccountOutput> getAccountByPesel(@RequestParam String pesel) {
+    public ResponseEntity<UserAccountOutput> getAccountByPesel(@RequestParam String pesel) throws NoUserFoundForGivenPeselException {
         return ResponseEntity
                 .status(HttpStatus.FOUND)
                 .body(userAccountService.getUserByPesel(pesel).convertFromUserAccountToOutput());
